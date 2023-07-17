@@ -1,0 +1,139 @@
+#headFrame{
+    
+    height: 550px;
+    border: 1px solid transparent;
+}
+
+.homeTxt{
+  font-size: 12px;
+}
+
+.awayTxt{
+  font-size: 12px;
+}
+
+#headFrameChild{
+    min-height: 450px;
+    border-radius: 20px;
+}
+
+#headFrameChild div{
+    width: 95%;
+    margin: auto;
+}
+
+#headFrameChild div > span{
+   border-radius: 4px;
+}
+
+#betLogo{
+   width: 140px;
+   object-fit: cover;
+   height: 40px;
+   border-radius: 45px;
+}
+
+.presult table{
+  font-size:10px;
+  min-width: 250px;
+  margin: 0 2px;
+}
+.presult th,.presult td{
+  font-size:10px;
+  padding: 1px;
+}
+
+#prevHolder table{
+  margin-left: 30px;
+  margin: 10px 10px;
+}
+
+.slid a{
+    display: inline-flex;
+    width: 1.5rem;
+    height: 1.5rem;
+    background: rgb(213, 214, 206);
+    color: rgb(213, 214, 206);
+    text-decoration: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin: 0 0 0.5rem 0;
+    position: relative;
+    cursor: pointer;
+  }
+
+  #prevPBox{
+    display: none;
+  }
+
+.blink_me {
+    animation: blinker 1s linear infinite;
+  }
+  
+  @keyframes blinker {
+    50% {
+      opacity: 0;
+    }
+  }
+  
+      .switch {
+        margin: 0 20px;
+        position: relative;
+        display: inline-block;
+        width: 160px;
+        height: 16px;
+      }
+      
+      .switch input { 
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgb(33, 172, 75);
+        -webkit-transition: .4s;
+        transition: .4s;
+      }
+      
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 13px;
+        width: 13px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+      }
+      
+      input:checked + .slider {
+        background-color: #f3d421;
+      }
+      
+      input:focus + .slider {
+        box-shadow: 0 0 1px #f3d421;
+      }
+      
+      input:checked + .slider:before {
+        -webkit-transform: translateX(139px);
+        -ms-transform: translateX(139px);
+        transform: translateX(139px);
+      }
+      
+      /* Rounded sliders */
+      .slider.round {
+        border-radius: 34px;
+      }
+      
+      .slider.round:before {
+        border-radius: 50%;
+      }

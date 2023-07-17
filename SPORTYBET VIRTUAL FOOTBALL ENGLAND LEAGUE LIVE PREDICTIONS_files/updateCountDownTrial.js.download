@@ -1,0 +1,36 @@
+            // keeping track of the locked status for predictions
+              var locked = false;
+              
+              
+      function updateCountDown(time){
+          if(time < 1) return 0;
+                 
+          console.log(" time update  ::: -- !!!",time);
+                let timer = new Date(time * 1000).toISOString().substr(14, 5);
+                
+                
+          if(time < 120) {
+              console.log(" start locking! ")
+              locked = true;
+              $('.jersy').addClass("lockedPrediction");
+              $('.homeTxt').html(`<img src="https://realnaps.com/signal/images/lock-closed.svg" width="20" class="lockedPrediction " alt="locked Prediction"> `);
+              $('.awayTxt').html(`<img src="https://realnaps.com/signal/images/lock-closed.svg" width="20" class="lockedPrediction " alt="locked Prediction"> `);
+              $('div.betStatus').text(timer)
+              
+                $('.lockedPrediction').click(function () {
+                    console.log("clicked!!!:")
+                    $('#lockedModal').click()
+                })
+              
+          }else{
+              locked = false;
+               $('.jersy').removeClass("lockedPrediction");
+               $('.betStatus').html('<small class="col text-dark blink_me">  bet <p> Over 1.5 </small> ')
+          }
+          
+   
+                $('.openTime').text(timer);
+      }
+        
+
+    

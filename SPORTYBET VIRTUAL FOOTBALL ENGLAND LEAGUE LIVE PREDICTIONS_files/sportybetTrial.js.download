@@ -1,0 +1,538 @@
+$(document).ready(function () {
+    
+    
+    let preP = [];
+    let Analytic = [];
+    let weeks = [];
+    let weeksRtn = [];
+
+    var pick = document.getElementById("pick").value;
+    $('#pick,#season,#view').change(function() {
+             pick = $('#pick').val();
+            let view = $('#view').val();
+            showPrev(view);
+    });
+
+    $('#prevP').click(function() {
+        $('#prevPBox').slideToggle();
+    })
+
+    
+    function sortWeek(data) {
+        let wk = [];
+        let wkRtn = [];
+        data.forEach((item, index) => {
+
+            let week = "wk" + (item.time).split(" *")[1];
+
+            wk.unshift(week)
+
+
+        })
+        weeks = wk;
+        $('#prevHolder').html(` <div id="log-side-chart" style="max-width:600px; max-height:400px; position: relative;" class="p-4"> <canvas id="myChart" ></canvas> </div>`)
+        let pol = ($('#analyticBal').attr("name") - $('#analyticBet').attr("name"));
+        if (pol > 1) {
+            pol = ["#28a745", "rgba(149, 182, 149, 0.36)"];
+        } else {
+            pol = ["#8B0000", "rgba(255, 0, 0, 0.4)"];
+        }
+        plotGraph(weeks, weeksRtn, pol)
+    }
+
+
+    function trackSeason(season) {
+        let stop = 0;
+        let All = preP;
+        let C = [];
+        let P1 = [];
+        let P2 = [];
+
+        for (let i = 0; i < preP.length; i++) {
+            let time = (preP[i].time).split("*")[1];
+            C.push(preP[i]);
+            stop++;
+            if (time == 1) {
+                break;
+            }
+        }
+
+
+        for (let i = stop; i < preP.length; i++) {
+            let time = (preP[i].time).split("*")[1];
+
+            P1.push(preP[i]);
+            stop++;
+            if (time == 1) {
+                break;
+            }
+
+        }
+
+
+        for (let i = stop; i < preP.length; i++) {
+            let time = (preP[i].time).split("*")[1];
+
+            P2.push(preP[i]);
+            stop++;
+            if (time == 1) {
+                break;
+            }
+
+        }
+
+        if (season == "ALL") return All;
+        if (season == "C") return C;
+        if (season == "P1") return P1;
+        if (season == "P2") return P2;
+
+    }
+
+    function getOdd(odd) {
+        let pred = $('#pick').val();
+
+        if (pred == "O15") return odd[0];
+        if (pred == "O25") return odd[1];
+        if (pred == "U15") return odd[2];
+        if (pred == "U25") return odd[3];
+
+    }
+
+    function processAnalytic(data) {
+        let winnings = (data.filter((a, b) => a > 0)).length;
+        let sum = numberWithCommas( data.reduce((a, b) => a + b, 0) );
+        let count = data.length;
+        let bets = numberWithCommas( (data.length) * 1000 );
+        let Acc = Math.floor((winnings / count) * 100);
+
+        $('#analyticWon').text(winnings)
+        $('#analyticPredict').text(count)
+        $('#analyticBal').text(sum)
+        $('#analyticBal').attr("name", data.reduce((a, b) => a + b, 0))
+        $('#analyticBet').text(bets)
+        $('#analyticBet').attr("name", ((data.length) * 1000))
+        $('#analyticAcc').text(Acc)
+    }
+
+    function getReturn(odd, result, pred) {
+
+        if ((pred == "O15") | (pred == "O25")) {
+
+            function limit() {
+                if (pred == 'O15') return 2;
+                if (pred == 'O25') return 3;
+            }
+
+            if (result >= limit()) {
+                return (1000 * odd);
+            }
+
+        }
+
+        if ((pred == "U15") | (pred == "U25")) {
+
+            function limit() {
+                if (pred == 'U15') return 2;
+                if (pred == 'U25') return 3;
+            }
+
+            if (result < limit()) {
+                return (1000 * odd);
+            }
+
+        }
+
+        return 0;
+    }
+
+    function totalSum(g1, g2, g3) {
+
+        return (g1 + g2 + g3);
+    }
+
+    function winLose(g1, g2, g3) {
+
+        let total = (g1 + g2 + g3);
+
+        if (total < 1) {
+            return 0;
+        }
+
+        if ((total > 1) & (total < 3000)) {
+            return 1;
+        }
+
+        if ((total > 3000)) {
+            return 100;
+        }
+    }
+
+    function showPrev(view) {
+
+             
+        if (view != "graph") {
+            $('#prevHolder').html("");
+        }
+        
+        let season = $("#season").val();
+        let data = trackSeason(season);
+        weeksRtn = [];
+
+        data.forEach(function(item, index, array) {
+            let match = item.match;
+            let time = item.time;
+            let result = item.result;
+            let odds = getOdd(item.odds);
+
+            let arrayLen = (array.length - 1);
+            let arrayIndex = index;
+
+            addRes(match, time, result, odds, arrayLen, arrayIndex)
+        });
+        
+        
+        if (view == "graph") {
+            sortWeek(data)
+        }
+
+    }
+
+    function addRes(match, time, result, odds, length, index) {
+
+        let whereToAdd = document.getElementById("prevHolder");
+
+        var table = document.createElement('table');
+
+        var thead = document.createElement('thead');
+
+
+
+
+        let timeStamp = time.split('-')[0];
+        let week = time.split('-')[1];
+
+
+        var th1 = document.createElement('th');
+        var th2 = document.createElement('th');
+        var th3 = document.createElement('th');
+        var th4 = document.createElement('th');
+
+
+
+        var thText2 = document.createTextNode("MATCH");
+        var thText3 = document.createTextNode("TIME | " + timeStamp);
+        var thText4 = document.createTextNode("RETURN");
+
+        th2.appendChild(thText2);
+        th3.appendChild(thText3);
+        th4.appendChild(thText4);
+
+        thead.appendChild(th2);
+        thead.appendChild(th3);
+        thead.appendChild(th4);
+
+        table.appendChild(thead);
+
+
+        let rtn = [];
+
+        for (var ri = 0; ri < 3; ri++) {
+
+            var tr = document.createElement('tr');
+
+
+
+            for (var di = 0; di < 3; di++) {
+
+                var td2 = document.createElement('td');
+                var td3 = document.createElement('td');
+                var td4 = document.createElement('td');
+
+                var text2 = document.createTextNode(match[ri]);
+                var text3 = document.createTextNode(week);
+                var text4 = document.createTextNode(Math.floor(getReturn(odds[ri], result[ri], pick)));
+
+                rtn[ri] = Math.floor(getReturn(odds[ri], result[ri], pick));
+
+
+
+                td2.appendChild(text2);
+                td3.appendChild(text3);
+                td4.appendChild(text4);
+
+            }
+
+            Analytic.push(rtn[ri]) // add the returned value on each row to the Analytic array
+
+            if (ri == 2) {
+
+                if (winLose(rtn[0], rtn[1], rtn[2]) == 0) {
+
+                    thead.setAttribute("class", "bg-danger text-white");
+
+                } else if (winLose(rtn[0], rtn[1], rtn[2]) == 1) {
+                    thead.setAttribute("class", "bg-warning text-white");
+
+                } else if (winLose(rtn[0], rtn[1], rtn[2]) == 100) {
+                    thead.setAttribute("class", "bg-success text-white");
+                }
+
+            }
+
+            tr.appendChild(td2);
+            tr.appendChild(td3);
+            tr.appendChild(td4);
+
+            table.appendChild(tr);
+
+        }
+
+
+
+
+
+
+        table.appendChild(tr);
+
+        var trSum = document.createElement('tr');
+        var tdSum1 = document.createElement('td');
+        var tdSum2 = document.createElement('td');
+        var tdSum3 = document.createElement('td');
+        var textSum1 = document.createTextNode("  ");
+        var textSum2 = document.createTextNode(" Total Return: ");
+        var textSum3 = document.createTextNode("N " + Math.floor(totalSum(rtn[0], rtn[1], rtn[2])));
+        
+        weeksRtn.unshift(Math.floor(totalSum(rtn[0], rtn[1], rtn[2])));
+
+        tdSum1.appendChild(textSum1);
+        tdSum2.appendChild(textSum2);
+        tdSum3.appendChild(textSum3);
+
+        trSum.appendChild(tdSum1);
+        trSum.appendChild(tdSum2);
+        trSum.appendChild(tdSum3);
+
+        table.appendChild(trSum)
+
+        whereToAdd.appendChild(table); // This means add the table to the div container the tables !
+
+        // now lets call the Analytic processor the moment we end the array loop
+        if (index == length) {
+
+            processAnalytic(Analytic);
+            Analytic = [];
+        }
+    }
+
+
+
+
+    let game = [
+        ['VFL Amsterdam', 'VFL Athens'],
+        ['VFL Oslo', 'VFL London'],
+        ['VFL Madrid', 'VFL Lisbon']
+    ];
+
+    function syncGame() {
+        let home = game[pos][0]; // for home Team name
+        let away = game[pos][1]; // for away Team name
+        let homeJ = jersey[pos][0]; // for home Jersey name
+        let awayJ = jersey[pos][1]; // for away Jersey name
+        $('#homeTxt').text(home);
+        $('#awayTxt').text(away);
+        $('#homeImg').attr('src', homeJ)
+        $('#awayImg').attr('src', awayJ)
+    }
+
+
+
+    // Time to code the indicator section !!!
+    
+    
+    
+    function plotGraph(wk, wkRtn, pol) {
+        let ctx = document.getElementById('myChart');
+
+        let myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: wk,
+                datasets: [{
+                    label: 'Profit / Loss',
+                    data: wkRtn,
+                    borderColor: "dark",
+                    backgroundColor: pol[1],
+                    fill: true,
+                    tension: 0.1,
+                    pointBackgroundColor: function(context) {
+
+                        if (context.raw > 3000) {
+                            return '#28a745';
+                        } else if ((context.raw > 1000) & (context.raw < 3000)) {
+                            return '#fdb314';
+                        } else {
+                            return 'rgb(255, 0, 0)';
+                        }
+                    },
+                    pointBorderColor: function(context) {
+
+                        if (context.raw > 3000) {
+                            return '#28a745';
+                        } else if ((context.raw > 1000) & (context.raw < 3000)) {
+                            return '#fdb314';
+                        } else {
+                            return 'rgb(255, 0, 0)';
+                        }
+                    }
+                }]
+            },
+            options: {
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (context.raw > 3000) {
+                                    return ["BET: ₦3000 ", "WON: ₦" + context.raw, " PROFIT: +₦" + (context.raw - 3000)];
+                                } else if ((context.raw > 1000) & (context.raw < 3000)) {
+                                    return ["BET: ₦3000 ", "WON: ₦" + context.raw, " LOST: -₦" + (3000 - context.raw)];
+                                } else {
+                                    return ["BET: ₦3000 ", " LOST: -₦" + 3000];
+                                }
+
+                            },
+                            labelColor: function(context) {
+                                if (context.raw > 3000) {
+                                    return {
+                                        backgroundColor: '#28a745'
+                                    }
+                                } else if ((context.raw > 1000) & (context.raw < 3000)) {
+                                    return {
+                                        backgroundColor: '#fdb314'
+                                    }
+                                } else {
+                                    return {
+                                        backgroundColor: 'rgb(255, 0, 0)'
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                }
+            }
+
+        })
+    }
+
+
+    
+const socket = io.connect( ':3000' );
+
+    
+/* START A SOCKET CONNECTION TEST */
+//$('#btnsocket').click(); // Once the page loads start the no conncetion modal
+    // the modal will only hide when the connection  is connected
+    
+    
+// NOW the moment the socket is connected clear the modal disconnect
+// 
+socket.on('connect', function() {
+    $('#socket').modal('hide');
+});
+///// Once we are connected the mode gets faded
+
+socket.on('disconnect', function() {
+    $('#socket').modal('show');
+});
+/*  ENDS THE SOCKET CONNECTION TEST*/	
+	
+	received = [];
+	let result = '';
+	
+	// for openTime
+socket.on('sportybet-openTime', function (data) {
+    
+       updateCountDown(data.time);
+       $('#day').text(data.nxtWeek);
+    
+});
+	
+	
+
+  // For Normal prediction 
+  
+socket.on('sportybet-prediction', function (data) {
+    
+                	let newR = data;
+                	
+                	
+                	let dat = newR[0].split("</td>");
+                		dat.splice(2,2);
+                	let keep = dat.join('');
+                	
+                	
+                    let fullPre = keep.split(" ");
+                	season = fullPre[2];
+                	$('#league').text(season);
+                	
+                	day = fullPre[6];
+                	
+                for(let i=0; i < 3; i++){
+                    
+                        let T0 =  newR[i].split('<td> ');
+                        T0 = T0.splice(2,2);
+                        T0 = T0[0].split(' vs ');
+                        let h = T0[0];
+                        let a = (T0[1].split('</td>'))[0];
+                        
+                         game[i][0] = h;
+                         game[i][1] = a;
+                         
+                }
+                        	if(locked == false){
+                                    	    // because we will would want to lock the games
+                                    	    // if we sense the match has already played and a new 
+                                    	    //prediction is out, we will have to limit the show of the 
+                                    	    //previous predictions  from here
+                                    	    
+                                    	    
+                                	$('#day').text(day);
+                	
+                                $('#hm1').text(game[0][0])
+                                $('#aw1').text(game[0][1])
+                                
+                                $('#hm2').text(game[1][0])
+                                $('#aw2').text(game[1][1])
+                                
+                                $('#hm3').text(game[2][0])
+                                $('#aw3').text(game[2][1])
+                        	}
+                        
+                	       
+                	
+  }); 
+  
+  // For normal Resul
+  socket.on('sportybet-result', function (data) {
+     let parsed = JSON.parse(data)
+     
+     if(result != data){
+           
+            preP = parsed;
+            let view = $('#view').val();
+            showPrev(view);
+            
+            // update the result
+         result = data;
+     }
+     
+  });
+  
+
+ 
+ // lets first save the game as the local storage
+ 
+	
+	
+	
+	}); // ends doc 
